@@ -1,0 +1,703 @@
+﻿<UserControl x:Class="DXY.WorkSheet.Controls.GanttChart.GanttView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converter="clr-namespace:DXY.WorkSheet.Converter"
+             xmlns:ganttModels="clr-namespace:DXY.WorkSheet.Controls.GanttChart.GanttModels"
+             xmlns:screeningchart="clr-namespace:DXY.WorkSheet.Controls.ScreeningChart"
+             SnapsToDevicePixels="True"
+             xmlns:pu ="clr-namespace:Panuon.UI.Silver;assembly=Panuon.UI.Silver"
+             >
+
+    <UserControl.Resources>
+        <converter:Right_Bottom x:Key="Right_Bottom" />
+        <converter:Left_Bottom x:Key="Left_Bottom" />
+        <converter:Right x:Key="Right" />
+        <converter:Bottom x:Key="Bottom" />
+        <converter:AddWidth x:Key="AddWidth" />
+        <converter:BoolToVisibilityConverter x:Key="VisibilityConverter"></converter:BoolToVisibilityConverter>
+        <Style x:Key="ToggleBtnStyle"
+           TargetType="{x:Type ToggleButton}">
+            <Setter Property="FocusVisualStyle"
+                Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Grid Name="grid"
+                          UseLayoutRounding="True"
+                          Margin="0,30,0,30"
+                          Cursor="Hand"
+                          Width="20">
+                            <Grid.Background>
+                                <ImageBrush ImageSource="/工单可视化;component/Resource/Images/timelinetbExpand.png"
+                                        Opacity="0.8" />
+                            </Grid.Background>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked"
+                                 Value="False">
+                                <Trigger.Setters>
+                                    <Setter Property="Background"
+                                        TargetName="grid">
+                                        <Setter.Value>
+                                            <ImageBrush ImageSource="/工单可视化;component/Resource/Images/timelinetbExpand.png"
+                                                    Opacity="0.8" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger.Setters>
+                            </Trigger>
+                            <Trigger Property="IsChecked"
+                                 Value="True">
+                                <Trigger.Setters>
+                                    <Setter Property="Background"
+                                        TargetName="grid">
+                                        <Setter.Value>
+                                            <ImageBrush ImageSource="/工单可视化;component/Resource/Images/timelinetbNormal.png"
+                                                    Opacity="0.8" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger.Setters>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{Binding GanttBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Background="#EDEDED"
+                  Grid.ColumnSpan="2"
+                  VerticalAlignment="Top"
+                  Name="MenuGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.9*"/>
+                <ColumnDefinition Width="1.9*"/>
+                <ColumnDefinition Width="1.9*"/>
+                <ColumnDefinition Width="1.9*"/>
+                <ColumnDefinition Width="1.3*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1.1*"/>
+                <ColumnDefinition Width="1.2*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1.5*"/>
+                <RowDefinition Height="6*"/>
+            </Grid.RowDefinitions>
+            <!--第二行 分类标签-->
+            <Image Source="/工单可视化;component/Resource/Images/筛选.fw.png"
+                   Stretch="None"
+                   Grid.Row="0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Margin="28,10"/>
+            <Image Source="/工单可视化;component/Resource/Images/图例.fw.png"
+                   Stretch="None"
+                   Grid.Row="0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Margin="10"
+                   Grid.Column="7"/>
+            <!--筛选控件-->
+            <Grid Grid.Row="1"
+                  Grid.ColumnSpan="7">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <ListBox Grid.Row="0"
+                         x:Name="ConditionListbox"
+                     BorderBrush="Transparent"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     ItemsSource="{Binding ComboBoxItems}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                    <ListBox.Resources>
+                        <VisualBrush x:Key="HelpBrush1"
+                                 Opacity="0.3"
+                                 Stretch="None"
+                                 AlignmentX="Left">
+                            <VisualBrush.Visual>
+                                <TextBlock FontStyle="Italic"
+                                       Text="{Binding ShowContent,StringFormat={}请选择{0}}" />
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </ListBox.Resources>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"
+                                   IsItemsHost="True" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <StackPanel Grid.Row="2"
+                        Margin="30,10,0,0" 
+                        Orientation="Horizontal">
+                                            <TextBlock Text="{Binding TipContent, Mode=OneWay}"
+                           FontSize="16"
+                           Foreground="#383838"
+                           FontWeight="Regular"/>
+                                            <ComboBox ItemsSource="{Binding ItemContent}"
+                                              Width="{Binding DataContext.ComboBoxWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                              IsEditable="True"
+                                              Text="{Binding TipContent, Mode=OneWay}"
+                                              ToolTip="{Binding TipContent}"
+                                                      SelectedIndex="0"
+                                              SelectionChanged="ComboBox_SelectionChanged"
+                                                          FontSize="16"
+                          Foreground="#383838"
+                          FontWeight="Regular"
+                          Height="25"
+                          VerticalAlignment="Top"
+                          Margin="15,0,0,0"
+                          pu:ComboBoxHelper.HoverBackground="#1E00C1FF"
+                          pu:ComboBoxHelper.SelectedBackground="#3200C1FF"
+                          pu:ComboBoxHelper.CornerRadius="10"/>
+
+
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+                <Grid Grid.Row="1">
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Left">
+                        <TextBlock 
+                           FontSize="16"
+                           Foreground="#383838"
+                           FontWeight="Regular"
+                           Margin="30,10,0,0" 
+                           Text="{Binding ShowContentType1}"></TextBlock>
+                        <TextBlock 
+                           FontSize="16"
+                           Foreground="#383838"
+                           FontWeight="Regular"
+                           Margin="30,10,0,0" 
+                           Text="{Binding ShowContentType2}"></TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                        <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Right">
+                            <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                                <TextBlock 
+                           FontSize="16"
+                           Foreground="#383838"
+                           FontWeight="Regular"
+                           Margin="30,10,0,0" 
+                           Text="起始日期"></TextBlock>
+                                <DatePicker VerticalAlignment="Bottom"
+                                HorizontalAlignment="Right"
+                                Width="120"
+                                        Name="StartTime"
+                                        Margin="15,0,0,0"
+                                            Loaded="DatePicker_Loaded"
+                            SelectedDateChanged="DatePicker_SelectedDateChanged" 
+                           />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                                <TextBlock 
+                           FontSize="16"
+                           Foreground="#383838"
+                           FontWeight="Regular"
+                           Margin="30,10,0,0" 
+                           Text="结束日期"
+                                ></TextBlock>
+                                <DatePicker VerticalAlignment="Bottom"
+                                HorizontalAlignment="Right"
+                                Width="120"
+                                        Margin="15,0,0,0"
+                                        Name="EndTime"
+                                            Loaded="DatePicker_Loaded"
+                            SelectedDateChanged="DatePicker_SelectedDateChanged" 
+                           />
+                            </StackPanel>
+
+                        </StackPanel>
+                        <Button Margin="10,5,0,0"
+                                Click="Button_Click"
+                                Width="50">查询</Button>
+                        <Button Margin="10,5,0,0"
+                                Click="Button_Click"
+                                Width="50">重置</Button>
+                    </StackPanel>
+
+                </Grid>
+
+            </Grid>
+            <!--图例控件-->
+            <Grid Grid.Row="1"
+                  Grid.Column="7"
+                  Grid.ColumnSpan="3"
+                  Margin="0,0,0,0">
+                <Grid.Background>
+                    <ImageBrush ImageSource="/工单可视化;component/Resource/Images/Legend.fw.png"
+                                Stretch="None"/>
+                </Grid.Background>
+
+            </Grid>
+        </Grid>
+
+
+
+        <!--内容-->
+        <Grid Grid.Row="1"
+              x:Name="ContentGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="40"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <!--Loading窗口-->
+            <Border Grid.Column="0"
+                BorderThickness="{Binding CellLineWidth}"
+                BorderBrush="{Binding CellLineColor}"
+                Background="{Binding GanttBackground}"
+                    Margin="30,30,20,30"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Visibility="{Binding Loading,Converter={StaticResource VisibilityConverter}}"
+                Grid.RowSpan="2"
+                Grid.ColumnSpan="2">
+                <StackPanel VerticalAlignment="Center"
+                        Orientation="Vertical">
+                    <pu:Loading  Width="40"
+                         Height="40"
+                         LoadingStyle="Wave"
+                         Foreground="#686868"
+                         IsRunning="{Binding Loading}"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                                 Margin="0,0,0,10"/>
+                    <TextBlock Text="正在加载中..."
+                           FontSize="20"
+                           FontFamily="幼圆"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!--<StackPanel Orientation="Horizontal"
+                         Grid.Column="0">-->
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--表格-->
+                <Border
+                BorderThickness="{Binding CellLineWidth}"
+                BorderBrush="{Binding CellLineColor}"
+                Background="{Binding GanttBackground}"
+                    x:Name="Gantt"
+                    Margin="30,30,20,30"
+                    Grid.Column="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <!--表头-->
+                        <Grid Grid.Row="0"
+                      Background="{Binding TitleBackground}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--第一列-->
+                            <Border Grid.Column="0"
+                            BorderThickness="{Binding CellLineWidth, Converter={StaticResource Right_Bottom}}"
+                            BorderBrush="{Binding CellLineColor}"
+                            Width="{Binding ColumnWidth_1}"
+                            MinHeight="{Binding CellHeight}">
+                                <TextBlock Text="{Binding ColumnName_1}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="{Binding FontSize}"
+                                   FontFamily="{Binding FontFamily}"
+                                   Foreground="{Binding Foreground}" />
+                            </Border>
+
+                            <!--第二列-->
+                            <Border Grid.Column="1"
+                            BorderThickness="{Binding CellLineWidth, Converter={StaticResource Right_Bottom}}"
+                            BorderBrush="{Binding CellLineColor}"
+                            Width="{Binding ColumnWidth_2}"
+                            MinHeight="{Binding CellHeight}">
+                                <TextBlock Text="{Binding ColumnName_2}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="{Binding FontSize}"
+                                   FontFamily="{Binding FontFamily}"
+                                   Foreground="{Binding Foreground}" />
+                            </Border>
+
+                            <!--第三列-->
+                            <Border Grid.Column="2"
+                            BorderThickness="{Binding CellLineWidth, Converter={StaticResource Right_Bottom}}"
+                            BorderBrush="{Binding CellLineColor}"
+                            Width="{Binding ColumnWidth_3}"
+                            MinHeight="{Binding CellHeight}">
+                                <TextBlock Text="{Binding ColumnName_3}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="{Binding FontSize}"
+                                   FontFamily="{Binding FontFamily}"
+                                   Foreground="{Binding Foreground}" />
+                            </Border>
+
+                            <!--第 五 列-->
+                            <Border Grid.Column="4"
+                            BorderThickness="{Binding CellLineWidth, Converter={StaticResource Left_Bottom}}"
+                            BorderBrush="{Binding CellLineColor}"
+                            Width="{Binding ColumnWidth_5, Converter={StaticResource AddWidth}}"
+                            MinHeight="{Binding CellHeight}">
+                                <TextBlock Text="{Binding ColumnName_5}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontSize="{Binding FontSize}"
+                                   FontFamily="{Binding FontFamily}"
+                                   Foreground="{Binding Foreground}" />
+                            </Border>
+
+                            <!--第 四 列 - 日期列-->
+                            <Grid Grid.Column="3">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <!--月份-->
+                                <Border Grid.Row="0"
+                                BorderThickness="{Binding CellLineWidth, Converter={StaticResource Bottom}}"
+                                BorderBrush="{Binding CellLineColor}"
+                                MinHeight="{Binding CellHeight}">
+                                    <TextBlock Background="Transparent"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Stretch"
+                                       FontSize="{Binding FontSize}"
+                                       FontFamily="{Binding FontFamily}"
+                                       Margin="10,0,0,0"
+                                       Foreground="{Binding Foreground}"
+                                       Text="{Binding ShowDate, StringFormat={}{0:yyyy年MM月}}" />
+                                </Border>
+
+                                <!--日期-->
+                                <Border Grid.Row="1"
+                                BorderThickness="{Binding CellLineWidth, Converter={StaticResource Bottom}}"
+                                BorderBrush="{Binding CellLineColor}"
+                                MinHeight="{Binding CellHeight}">
+                                    <ListBox BorderThickness="0"
+                                     Background="Transparent"
+                                     ItemsSource="{Binding Days}"
+                                     Loaded="ListBox_Loaded"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Left">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel  Orientation="Horizontal"
+                                                    IsItemsHost="True" />
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                            <Border Width="{Binding DataContext.CellWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                            Height="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                            BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                            BorderThickness="{Binding DataContext.CellLineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}},Converter={StaticResource Right}}"
+                                                            Loaded="Border_Loaded">
+                                                                <TextBlock Text="{Binding}"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Center"
+                                                                   FontSize="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                   FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                   Foreground="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </Border>
+
+                            </Grid>
+                        </Grid>
+
+                        <!--行-->
+                        <ScrollViewer Grid.Row="1"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Margin="0,0,0,17">
+                            <ListBox Background="Transparent"
+                             BorderThickness="0"
+                             Loaded="ListBox_Loaded"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                             ItemsSource="{Binding Rows}">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!--第一列内容-->
+                                                        <Border Grid.Column="0"
+                                                        BorderThickness="{Binding DataContext.CellLineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}},Converter={StaticResource Right_Bottom}}"
+                                                        BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                        Width="{Binding DataContext.ColumnWidth_1, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                        MinHeight="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}">
+                                                            <TextBlock Text="{Binding ColumnContent_1}"
+                                                               VerticalAlignment="Center"
+                                                               HorizontalAlignment="Left"
+                                                               Margin="5,0,0,0"
+                                                               FontSize="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                               FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                               Foreground="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                        </Border>
+
+                                                        <!--后续的列-->
+                                                        <Grid Grid.Column="1">
+                                                            <ListBox Background="Transparent"
+                                                             BorderThickness="0"
+                                                             Loaded="ListBox_Loaded_1"
+                                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                             ItemsSource="{Binding Rows}">
+                                                                <ListBox.ItemContainerStyle>
+                                                                    <Style TargetType="ListBoxItem">
+                                                                        <Setter Property="Template">
+                                                                            <Setter.Value>
+                                                                                <ControlTemplate TargetType="ListBoxItem">
+                                                                                    <Grid>
+                                                                                        <Grid.ColumnDefinitions>
+                                                                                            <ColumnDefinition Width="auto" />
+                                                                                            <ColumnDefinition Width="*" />
+                                                                                            <ColumnDefinition Width="auto" />
+                                                                                        </Grid.ColumnDefinitions>
+                                                                                        <!-- 鼠标滑过变色的蒙版-->
+                                                                                        <Border x:Name="Mask"
+                                                                                        Grid.ColumnSpan="3"
+                                                                                        VerticalAlignment="Stretch"
+                                                                                        HorizontalAlignment="Stretch"
+                                                                                        Background="Transparent" />
+
+                                                                                        <!--第二列-->
+                                                                                        <Border Grid.Column="0"
+                                                                                        BorderThickness="{Binding DataContext.CellLineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}},Converter={StaticResource Right_Bottom}}"
+                                                                                        BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                        Width="{Binding DataContext.ColumnWidth_2, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                        MinHeight="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}">
+                                                                                            <TextBlock Text="{Binding ColumnContent_2}"
+                                                                                               VerticalAlignment="Center"
+                                                                                               HorizontalAlignment="Center"
+                                                                                               FontSize="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                               FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                               Foreground="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                                                        </Border>
+
+                                                                                        <!--第 五 列-->
+                                                                                        <Border Grid.Column="2"
+                                                                                        BorderThickness="{Binding DataContext.CellLineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}},Converter={StaticResource Left_Bottom}}"
+                                                                                        BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                        Width="{Binding DataContext.ColumnWidth_5, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                        MinHeight="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}">
+                                                                                            <TextBlock Text="{Binding ColumnContent_5, StringFormat={}{0:N2}人日}"
+                                                                                               Foreground="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                               FontSize="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                               FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                               VerticalAlignment="Center"
+                                                                                               HorizontalAlignment="Center" />
+                                                                                        </Border>
+
+                                                                                        <!--其他列-->
+                                                                                        <ListBox Grid.Column="1"
+                                                                                         BorderThickness="0"
+                                                                                         Background="Transparent"
+                                                                                         Loaded="ListBox_Loaded_1"
+                                                                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                                                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                                                         ItemsSource="{Binding Rows}">
+                                                                                            <ListBox.ItemContainerStyle>
+                                                                                                <Style TargetType="ListBoxItem">
+                                                                                                    <Setter Property="Template">
+                                                                                                        <Setter.Value>
+                                                                                                            <ControlTemplate TargetType="ListBoxItem">
+                                                                                                                <Grid>
+                                                                                                                    <Grid.ColumnDefinitions>
+                                                                                                                        <ColumnDefinition Width="auto" />
+                                                                                                                        <ColumnDefinition Width="*" />
+                                                                                                                    </Grid.ColumnDefinitions>
+
+                                                                                                                    <!--第三列-->
+                                                                                                                    <Border Grid.Column="0"
+                                                                                                                    BorderThickness="{Binding DataContext.CellLineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}},Converter={StaticResource Right_Bottom}}"
+                                                                                                                    BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                    Width="{Binding DataContext.ColumnWidth_3, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                    MinHeight="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}">
+                                                                                                                        <TextBlock Text="{Binding ColumnContent_3}"
+                                                                                                                           VerticalAlignment="Center"
+                                                                                                                           HorizontalAlignment="Left"
+                                                                                                                           Margin="2,0,0,0"
+                                                                                                                           FontSize="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                           FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                           Foreground="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                                                                                    </Border>
+
+                                                                                                                    <!--第四列 - 数据列 -->
+                                                                                                                    <ListBox Grid.Column="1"
+                                                                                                                     BorderThickness="0"
+                                                                                                                     Background="Transparent"
+                                                                                                                     Loaded="ListBox_Loaded_1"
+                                                                                                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                                                                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                                                                                     ItemsSource="{Binding Rows}">
+                                                                                                                        <ListBox.ItemContainerStyle>
+                                                                                                                            <Style TargetType="ListBoxItem">
+                                                                                                                                <Setter Property="Template">
+                                                                                                                                    <Setter.Value>
+                                                                                                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                                                                                                            <Border BorderThickness="{Binding DataContext.CellLineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}},Converter={StaticResource Bottom}}"
+                                                                                                                                            BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                                            Height="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                                            HorizontalAlignment="Stretch">
+
+                                                                                                                                                <!--色条-->
+                                                                                                                                                <ListBox BorderThickness="0"
+                                                                                                                                                 Background="Transparent"
+                                                                                                                                                 Loaded="ListBox_Loaded"
+                                                                                                                                                 ItemsSource="{Binding Cells}"
+                                                                                                                                                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                                                                                                                                                 ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                                                                                                                                                    <ListBox.ItemsPanel>
+                                                                                                                                                        <ItemsPanelTemplate>
+                                                                                                                                                            <WrapPanel  Orientation="Horizontal"
+                                                                                                                                                                IsItemsHost="True" />
+                                                                                                                                                        </ItemsPanelTemplate>
+                                                                                                                                                    </ListBox.ItemsPanel>
+                                                                                                                                                    <ListBox.ItemContainerStyle>
+                                                                                                                                                        <Style TargetType="ListBoxItem">
+                                                                                                                                                            <Setter Property="Template">
+                                                                                                                                                                <Setter.Value>
+                                                                                                                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                                                                                                                        <Border Width="{Binding DataContext.CellWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                                                                        BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                                                                        Height="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                                                                        Background="{Binding Color}"
+                                                                                                                                                                        BorderThickness="{Binding Thickness}"
+                                                                                                                                                                        ToolTip="{Binding TipContent}">
+                                                                                                                                                                            <TextBlock Text="{Binding ShowContent}"
+                                                                                                                                                                               VerticalAlignment="Center"
+                                                                                                                                                                               HorizontalAlignment="Left"
+                                                                                                                                                                               Margin="10,0,0,0"
+                                                                                                                                                                               FontSize="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                                                                               FontFamily="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}"
+                                                                                                                                                                               Foreground="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                                                                                                                                        </Border>
+                                                                                                                                                                    </ControlTemplate>
+                                                                                                                                                                </Setter.Value>
+                                                                                                                                                            </Setter>
+                                                                                                                                                        </Style>
+                                                                                                                                                    </ListBox.ItemContainerStyle>
+                                                                                                                                                </ListBox>
+
+                                                                                                                                            </Border>
+                                                                                                                                        </ControlTemplate>
+                                                                                                                                    </Setter.Value>
+                                                                                                                                </Setter>
+                                                                                                                            </Style>
+                                                                                                                        </ListBox.ItemContainerStyle>
+                                                                                                                    </ListBox>
+
+                                                                                                                </Grid>
+                                                                                                            </ControlTemplate>
+                                                                                                        </Setter.Value>
+                                                                                                    </Setter>
+                                                                                                </Style>
+                                                                                            </ListBox.ItemContainerStyle>
+                                                                                        </ListBox>
+
+                                                                                    </Grid>
+                                                                                    <ControlTemplate.Triggers>
+                                                                                        <Trigger Property="IsMouseOver"
+                                                                                         Value="true">
+                                                                                            <Setter TargetName="Mask"
+                                                                                            Property="Background"
+                                                                                            Value="{Binding DataContext.CellMouseOverColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                                                        </Trigger>
+                                                                                    </ControlTemplate.Triggers>
+                                                                                </ControlTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </ListBox.ItemContainerStyle>
+                                                            </ListBox>
+                                                        </Grid>
+
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
+                        </ScrollViewer>
+
+                        <ScrollBar x:Name="HorizontalScrollBar"
+                           Grid.Row="1"
+                           VerticalAlignment="Bottom"
+                           Orientation="Horizontal"
+                           Scroll="ScrollBar_Scroll"
+                           Loaded="HorizontalScrollBar_Loaded"
+                           Maximum="{Binding ScrollBarMaximum}">
+                        </ScrollBar>
+                    </Grid>
+                </Border>
+
+                <screeningchart:ScreeningView x:Name="Screening"
+                                              MinWidth="180"
+                                          Margin="0,30,0,30"
+                                              Grid.Column="1"/>
+            <!--</StackPanel>-->
+            </Grid>
+
+            <ToggleButton x:Name="img"
+                      Checked="img_Checked"
+                      Unchecked="img_Unchecked"
+                          Grid.Column="2"
+                          Margin="0,0,0,0"
+                          IsChecked="True"
+                      Style="{DynamicResource ToggleBtnStyle}">
+            </ToggleButton>
+        </Grid>
+    </Grid>
+</UserControl>

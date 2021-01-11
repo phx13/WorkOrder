@@ -1,0 +1,158 @@
+﻿<UserControl x:Class="DXY.WorkSheet.Controls.ScreeningChart.ScreeningView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converter="clr-namespace:DXY.WorkSheet.Converter">
+    <UserControl.Resources>
+        <converter:Bottom x:Key="Bottom" />
+        <converter:Right_Bottom x:Key="Right_Bottom" />
+        
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Border x:Name="table"
+            Background="{Binding Background}"
+            BorderBrush="{Binding CellLineColor}"
+            BorderThickness="{Binding CellLineWidth}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--表头-->
+                <Border Grid.Row="0"
+                    Background="{Binding TitleBackground}"
+                    Height="{Binding CellHeight}"
+                    BorderBrush="{Binding CellLineColor}"
+                    BorderThickness="{Binding CellLineWidth, Converter={StaticResource Bottom}}">
+                    <TextBlock Text="{Binding TitleName}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           FontSize="{Binding FontSize}"
+                           FontFamily="{Binding FontFamily}"
+                           Foreground="{Binding Foreground}">
+
+                    </TextBlock>
+                </Border>
+
+                <!--行-->
+                <DataGrid Grid.Row="1"
+                          x:Name="datagrid"
+                      ItemsSource="{Binding Rows}">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGrid">
+                            <Setter Property="Background"
+                                Value="Transparent" />
+                            <Setter Property="BorderThickness"
+                                Value="0" />
+                            <Setter Property="CanUserAddRows"
+                                Value="False" />
+                            <Setter Property="CanUserDeleteRows"
+                                Value="False" />
+                            <Setter Property="CanUserResizeColumns"
+                                Value="False" />
+                            <Setter Property="Background"
+                                Value="Transparent" />
+                            <Setter Property="BorderBrush"
+                                Value="Transparent" />
+                            <Setter Property="RowHeaderWidth"
+                                Value="0" />
+                            <Setter Property="VerticalGridLinesBrush"
+                                Value="{Binding CellLineColor}" />
+                            <Setter Property="HorizontalGridLinesBrush"
+                                Value="{Binding CellLineColor}" />
+                            <Setter Property="AutoGenerateColumns"
+                                Value="True" />
+                            <Setter Property="IsReadOnly"
+                                Value="True" />
+                            <Setter Property="EnableColumnVirtualization"
+                                Value="True" />
+                            <Setter Property="EnableRowVirtualization"
+                                Value="True" />
+                            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+                                Value="Disabled" />
+                            <Setter Property="RowStyle">
+                                <Setter.Value>
+                                    <Style TargetType="DataGridRow">
+                                        <Setter Property="Background"
+                                            Value="Transparent" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver"
+                                                 Value="true">
+                                                <Setter Property="Background"
+                                                    Value="{Binding DataContext.CellMouseOverColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="CellStyle">
+                                <Setter.Value>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="FontFamily"
+                                            Value="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                        <Setter Property="FontSize"
+                                            Value="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                        <Setter Property="Foreground"
+                                            Value="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                        <Setter Property="Background"
+                                            Value="Transparent" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Height="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                        Width="{Binding DataContext.CellWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                            MaxWidth="90">
+                                                        <ContentPresenter VerticalAlignment="Center"
+                                                                      HorizontalAlignment="Left"
+                                                                      Margin="2,0,0,0" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+
+                            <!--表头-->
+                            <Setter Property="ColumnHeaderStyle">
+                                <Setter.Value>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="FontFamily"
+                                            Value="{Binding DataContext.FontFamily, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                        <Setter Property="FontSize"
+                                            Value="{Binding DataContext.FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                        <Setter Property="Foreground"
+                                            Value="{Binding DataContext.Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" />
+                                        <Setter Property="Background"
+                                            Value="Transparent" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridColumnHeader">
+                                                    <Border Height="{Binding DataContext.CellHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                        MinWidth="{Binding DataContext.CellWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                        BorderBrush="{Binding DataContext.CellLineColor, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                        Background="{Binding DataContext.TitleBackground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}"
+                                                        BorderThickness="{Binding DataContext.CellLineWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Converter={StaticResource Right_Bottom}}">
+                                                        <ContentPresenter VerticalAlignment="Center"
+                                                                      HorizontalAlignment="Center" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.Resources>
+                </DataGrid>
+
+            </Grid>
+        </Border>
+        
+    </Grid>
+
+</UserControl>

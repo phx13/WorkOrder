@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="DXY.WorkSheet.PageModels.PageControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ganttchart="clr-namespace:DXY.WorkSheet.Controls.GanttChart"
+             >
+    <Grid>
+        <!--<Grid.ColumnDefinitions>
+            <ColumnDefinition Width="7*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>-->
+
+        <ganttchart:GanttView x:Name="Gantt"/>
+        
+    </Grid>
+</UserControl>
